@@ -6,8 +6,8 @@ import re
 import tempfile
 import logging
 
-logger = logging.getLogger('vim-cflag')
-hdlr = logging.FileHandler(os.path.join(tempfile.tempdir, 'vim-cflag.log'), mode='w')
+logger = logging.getLogger(__name__)
+hdlr = logging.FileHandler(os.path.join(tempfile.gettempdir(), 'vim-cflag.log'), mode='w')
 formatter = logging.Formatter('%(asctime)s %(levelname)s %(message)s')
 hdlr.setFormatter(formatter)
 logger.addHandler(hdlr) 
@@ -30,7 +30,7 @@ class CDefineFile():
             self.allOK = False
         else:
             fileChanged = False
-            if self.flagFile != filename:
+            if self.flagFile is None or self.flagFile != filename:
                 self.flagFile = filename
                 fileChanged = True 
             elif self.fileModTime != os.stat(filename).st_mtime:
@@ -146,20 +146,17 @@ def pyDoSynUpdate():
             flagstr = ret.group('flag')
             cond.add(gDefineFile, flagstr)
 
-    logger.info("_0s: %s", "###".join(cond._0s))
-    logger.info("_1s: %s", "###".join(cond._1s))
     cond.apply()
 
 # instance for C define file, global variable
 gDefineFile = CDefineFile()
-
 EOF
 
-function! DoSynUpdate()
+function! cflags#SynUpdate()
 python << EOF
 pyDoSynUpdate()
 EOF
 endfunction
 
 " define VIM command to execute the syn region udpate
-command! DoBufSynUpdate :call DoSynUpdate()
+command! DoSynUpdate :call cflags#SynUpdate()
