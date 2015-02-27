@@ -56,6 +56,10 @@ class CDefineFile():
         
         return None
 
+    def printDefine(self, define):
+        if define in self.defines.keys():
+            print "%s : %s" % (define, self.defines[define])
+
 ORIG_STR = r'''
 syn region cCppOutWrapper start="^\s*\(%:\|#\)\s*if\s\+__0KEY__\s*\($\|//\|/\*\|&\)" end=".\@=\|$" contains=cCppOutIf,cCppOutElse,@NoSpell fold
 syn region cCppOutIf contained start="__0KEY__" matchgroup=cCppOutWrapper end="^\s*\(%:\|#\)\s*endif\>" contains=cCppOutIf2,cCppOutElse
@@ -148,6 +152,19 @@ def pyDoSynUpdate():
 
     cond.apply()
 
+def pyPrintDefine(define):
+    global gDefineFile
+    try:
+        filename = vim.eval("g:c_define_file")
+    except:
+        logger.warning("g:c_define_file not defined")
+        return 
+
+    gDefineFile.update(filename)
+    word = vim.eval("expand(\"<cword>\")")
+    gDefineFile.printDefine(word)
+
+
 # instance for C define file, global variable
 gDefineFile = CDefineFile()
 EOF
@@ -155,6 +172,13 @@ EOF
 function! cflags#SynUpdate()
 python << EOF
 pyDoSynUpdate()
+EOF
+endfunction
+
+function! cflags#PrintDefine()
+python << EOF
+word = vim.eval("expand(\"<cword>\")")
+pyPrintDefine(word)
 EOF
 endfunction
 
