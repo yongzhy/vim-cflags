@@ -23,6 +23,12 @@ class CDefineFile():
         if filename is not None:
             self.update(filename)
 
+    def clear(self):
+        self.allOK = True 
+        self.flagFile = None
+        self.fileModTime = -1
+        self.defines.clear()
+
     def update(self, filename):
     # update defines from define files
         if not os.path.isfile(filename):
@@ -37,7 +43,6 @@ class CDefineFile():
                 self.fileModTime = os.stat(filename).st_mtime
                 fileChanged = True 
 
-            fileChanged = True
             if fileChanged == True:
                 self.updateDefines()
                 logger.info(self.defines)
@@ -80,6 +85,9 @@ class Conditions():
 
     def apply(self):
     # Apply the conditions on current buffer
+        # reverse sort so flags beginnig with another shorter flag name can be parsed correctly
+        self._0s = sorted(self._0s, reverse = True)
+        self._1s = sorted(self._1s, reverse = True)
         str0key = '\(' + '\|'.join(self._0s) + '\)'
         str1key = '\(' + '\|'.join(self._1s) + '\)'
         str01key = '\(' + '\|'.join(self._0s + self._1s) + '\)'
